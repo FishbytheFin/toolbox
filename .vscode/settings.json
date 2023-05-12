@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "citro2d.h": "c"
+        "citro2d.h": "c",
+        "citro3d.h": "c"
     }
 }
