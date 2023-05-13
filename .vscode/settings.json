@@ -2,5 +2,6 @@
     "files.associations": {
         "citro2d.h": "c",
         "citro3d.h": "c"
-    }
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }

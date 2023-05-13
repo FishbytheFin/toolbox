@@ -15,26 +15,51 @@ typedef struct
 	float dx, dy; // velocity
 } Sprite;
 
+typedef struct
+{
+	C2D_Sprite sprite; // Sprite
+	float dx, dy;	   // velocity
+	int x, y;		   // position
+	int w, h;		   // width, height
+} Player;
+
 static C2D_SpriteSheet spriteSheet;
 static Sprite sprites[4];
+static Player player;
+
+// Possibly useful info for later:
+// rand() % SCREEN_HEIGHT
+// C2D_SpriteSetRotation(&sprite->spr, C3D_Angle(rand() / (float)RAND_MAX));
 
 static void init()
 {
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
 	srand(time(NULL));
 
-	for (size_t i = 0; i < 4; i++)
-	{
-		Sprite *sprite = &sprites[i];
+	Player *sprite = &player;
 
-		C2D_SpriteFromSheet(&sprite->spr, spriteSheet, rand() % imgCount);
-		C2D_SpriteSetCenter(&sprite->spr, 0.5f, 0.5f);
-		C2D_SpriteSetPos(&sprite->spr, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
-		C2D_SpriteSetRotation(&sprite->spr, C3D_Angle(rand() / (float)RAND_MAX));
+	C2D_SpriteFromSheet(&sprite->sprite, spriteSheet, 0);
+	C2D_SpriteSetCenter(&sprite->sprite, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&sprite->sprite, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
-		sprite->dx = 2.0f;
-		sprite->dy = 3.0f;
-	}
+	sprite->dx = 0.0f;
+	sprite->dy = 0.0f;
+	sprite->x = SCREEN_WIDTH / 2;
+	sprite->y = SCREEN_HEIGHT / 2;
+}
+
+static void movePlayer()
+{
+	Player *p = &player;
+	C2D_SpriteMove(&p->sprite, p->dx, p->dy);
+
+	p->y = p->y + p->dy;
+	p->x = p->x + p->dx;
+}
+
+static void update()
+{
+	movePlayer();
 }
 
 static void moveBoys()
@@ -91,7 +116,22 @@ int main(int argc, char *argv[])
 		if (kDown & KEY_START)
 			break; // break in order to return to hbmenu
 
-		moveBoys();
+		u32 kHeld = hidKeysHeld();
+		if ((kHeld & KEY_UP))
+			(&player)->dy = -2.0f;
+		else if ((kHeld & KEY_DOWN))
+			(&player)->dy = 2.0f;
+		else
+			(&player)->dy = 0.0f;
+
+		if ((kHeld & KEY_RIGHT))
+			(&player)->dx = 2.0f;
+		else if ((kHeld & KEY_LEFT))
+			(&player)->dx = -2.0f;
+		else
+			(&player)->dx = 0.0f;
+
+		update();
 
 		// Render
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -99,8 +139,7 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
-		for (size_t i = 0; i < 4; i++)
-			C2D_DrawSprite(&sprites[i].spr);
+		C2D_DrawSprite(&player.sprite);
 
 		// C2D_DrawRectangle(0.0f, 0.0f, 0.0f, 20.0f, 90.0f, 255.0f, 0.0f, 0.0f, 1.0f);
 		C3D_FrameEnd(0);
