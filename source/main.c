@@ -9,6 +9,8 @@
 #define SCREEN_WIDTH 400
 #define SCREEN_HEIGHT 240
 
+#define TEMP_PLAYER_SPRITE 0
+
 typedef struct
 {
 	C2D_Sprite spr;
@@ -36,16 +38,16 @@ static void init()
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
 	srand(time(NULL));
 
-	Player *sprite = &player;
+	Player *p = &player;
 
-	C2D_SpriteFromSheet(&sprite->sprite, spriteSheet, 0);
-	C2D_SpriteSetCenter(&sprite->sprite, 0.5f, 0.5f);
-	C2D_SpriteSetPos(&sprite->sprite, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	C2D_SpriteFromSheet(&p->sprite, spriteSheet, TEMP_PLAYER_SPRITE);
+	C2D_SpriteSetCenter(&p->sprite, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&p->sprite, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
-	sprite->dx = 0.0f;
-	sprite->dy = 0.0f;
-	sprite->x = SCREEN_WIDTH / 2;
-	sprite->y = SCREEN_HEIGHT / 2;
+	p->dx = 0.0f;
+	p->dy = 0.0f;
+	p->x = SCREEN_WIDTH / 2;
+	p->y = SCREEN_HEIGHT / 2;
 }
 
 static void movePlayer()
