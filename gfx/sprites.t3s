@@ -1,4 +1,5 @@
 --atlas -f rgba8888 -z auto
+player1.png
 temp_player.png
 download.png
 

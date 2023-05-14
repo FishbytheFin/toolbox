@@ -13,7 +13,7 @@
                 "ARM9"
             ],
             "windowsSdkVersion": "10.0.17763.0",
-            "compilerPath": "C:\\devkitPro\\devkitARM\\bin\\arm-none-eabi-gcc",
+            "compilerPath": "C:\\devkitPro\\devkitA64\\libexec\\gcc\\aarch64-none-elf\\12.2.0\\cc1",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",

@@ -6,11 +6,20 @@
 #include <stdlib.h>
 #include <time.h>
 
+// Helpful Varibles :)
 #define SCREEN_WIDTH 400
 #define SCREEN_HEIGHT 240
 
 #define TEMP_PLAYER_SPRITE 0
 
+#define PLAYER_IS_UP 0
+#define PLAYER_IS_RIGHT 1
+#define PLAYER_IS_DOWN 2
+#define PLAYER_IS_LEFT 3
+
+#define MAX_TONGUE_FRAMES 20
+
+// player height: 48px
 typedef struct
 {
 	C2D_Sprite spr;
@@ -19,15 +28,22 @@ typedef struct
 
 typedef struct
 {
-	C2D_Sprite sprite; // Sprite
-	float dx, dy;	   // velocity
-	int x, y;		   // position
-	int w, h;		   // width, height
+	C2D_Sprite sprite;			  // Sprite
+	float dx, dy;				  // velocity
+	int x, y;					  // position
+	int w, h;					  // width, height
+	int facing;					  // 0, 1, 2, 3 = up, right, down, left
+	bool tongueOut;				  // true if tongue is out
+	bool tongueForward;			  // True if tongue is traveling away from the player
+	float tongueTimer;			  // # of frames until the tongue is put away
+	float tongueX, tongueY;		  // X & Y of the tip of the tongue compared to the x, and y + 5 respictively of the player
+	float maxTongueX, maxTongueY; // The max stretch X & Y of the tip of the tongue for current lick
 } Player;
 
 static C2D_SpriteSheet spriteSheet;
 static Sprite sprites[4];
 static Player player;
+static int frame;
 
 // Possibly useful info for later:
 // rand() % SCREEN_HEIGHT
@@ -48,6 +64,7 @@ static void init()
 	p->dy = 0.0f;
 	p->x = SCREEN_WIDTH / 2;
 	p->y = SCREEN_HEIGHT / 2;
+	p->tongueOut = false;
 }
 
 static void movePlayer()
@@ -102,6 +119,8 @@ int main(int argc, char *argv[])
 	if (!spriteSheet)
 		svcBreak(USERBREAK_PANIC);
 
+	frame = 0;
+
 	// Sandwhich
 	init();
 
@@ -111,6 +130,8 @@ int main(int argc, char *argv[])
 	// Main loop
 	while (aptMainLoop())
 	{
+
+		frame++;
 		hidScanInput();
 
 		// Your code goes here
@@ -132,6 +153,81 @@ int main(int argc, char *argv[])
 			(&player)->dx = -2.0f;
 		else
 			(&player)->dx = 0.0f;
+		if (!player.tongueOut)
+		{
+			player.tongueX = 0;
+			player.tongueY = 0;
+			if (kHeld & KEY_A)
+			{
+				player.tongueOut = true;
+				player.tongueForward = true;
+				player.tongueTimer = 0;
+				player.tongueX += 70;
+			}
+			if (kHeld & KEY_B)
+			{
+				player.tongueOut = true;
+				player.tongueForward = true;
+				player.tongueTimer = 0;
+				player.tongueY += 70;
+			}
+			if (kHeld & KEY_X)
+			{
+				player.tongueOut = true;
+				player.tongueForward = true;
+				player.tongueTimer = 0;
+				player.tongueY -= 70;
+			}
+			if (kHeld & KEY_Y)
+			{
+				player.tongueOut = true;
+				player.tongueForward = true;
+				player.tongueTimer = 0;
+				player.tongueX -= 70;
+			}
+
+			if (player.tongueX == 0)
+			{
+				// player.tongueY += (player.tongueY - (player.y + 5)) * 2;
+				player.tongueY *= 1.5;
+			}
+			else if (player.tongueY == 0)
+			{
+				// player.tongueX += (player.tongueX - player.x) * 2;
+				player.tongueX *= 1.5;
+			}
+
+			if (player.tongueOut)
+			{
+				player.maxTongueX = player.tongueX;
+				player.maxTongueY = player.tongueY;
+				player.tongueX = 0;
+				player.tongueY = 0;
+			}
+		}
+		else
+		{
+
+			if (player.tongueForward)
+			{
+				player.tongueTimer++;
+			}
+			else
+			{
+				player.tongueTimer--;
+			}
+			player.tongueX = player.maxTongueX * (player.tongueTimer / MAX_TONGUE_FRAMES);
+			player.tongueY = player.maxTongueY * (player.tongueTimer / MAX_TONGUE_FRAMES);
+
+			if (player.tongueTimer == MAX_TONGUE_FRAMES)
+			{
+				player.tongueForward = false;
+			}
+			else if (player.tongueTimer == 0)
+			{
+				player.tongueOut = false;
+			}
+		}
 
 		update();
 
@@ -142,6 +238,10 @@ int main(int argc, char *argv[])
 
 		// Draw sprites
 		C2D_DrawSprite(&player.sprite);
+		if (player.tongueOut)
+		{
+			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+		}
 
 		// C2D_DrawRectangle(0.0f, 0.0f, 0.0f, 20.0f, 90.0f, 255.0f, 0.0f, 0.0f, 1.0f);
 		C3D_FrameEnd(0);
