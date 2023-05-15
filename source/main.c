@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 		frame++;
 		hidScanInput();
 
-		// Your code goes here
+		// User input
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
 			break; // break in order to return to hbmenu
@@ -256,7 +256,9 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
+		//Draw player
 		C2D_DrawSprite(&player.sprite);
+		//Draw tongue
 		if (player.tongueOut)
 		{
 			if (player.facing == PLAYER_IS_UP) {
@@ -265,7 +267,6 @@ int main(int argc, char *argv[])
 			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);}
 		}
 
-		// C2D_DrawRectangle(0.0f, 0.0f, 0.0f, 20.0f, 90.0f, 255.0f, 0.0f, 0.0f, 1.0f);
 		C3D_FrameEnd(0);
 	}
 
