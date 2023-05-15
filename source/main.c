@@ -45,6 +45,8 @@ static Sprite sprites[4];
 static Player player;
 static int frame;
 
+static int cameraX, cameraY; //x & y of camera's center
+
 // Possibly useful info for later:
 // rand() % SCREEN_HEIGHT
 // C2D_SpriteSetRotation(&sprite->spr, C3D_Angle(rand() / (float)RAND_MAX));
@@ -140,19 +142,32 @@ int main(int argc, char *argv[])
 			break; // break in order to return to hbmenu
 
 		u32 kHeld = hidKeysHeld();
-		if ((kHeld & KEY_UP))
+		if ((kHeld & KEY_UP)) {
 			(&player)->dy = -2.0f;
-		else if ((kHeld & KEY_DOWN))
+			if (!player.tongueOut) {
+				player.facing = PLAYER_IS_UP;
+			}}
+		else if ((kHeld & KEY_DOWN)){
 			(&player)->dy = 2.0f;
-		else
-			(&player)->dy = 0.0f;
+			if (!player.tongueOut) {
+				player.facing = PLAYER_IS_DOWN;
+			}}
+		else{
+			(&player)->dy = 0.0f;}
 
-		if ((kHeld & KEY_RIGHT))
+		if ((kHeld & KEY_RIGHT)){
 			(&player)->dx = 2.0f;
-		else if ((kHeld & KEY_LEFT))
+			if (!player.tongueOut) {
+				player.facing = PLAYER_IS_RIGHT;
+			}}
+		else if ((kHeld & KEY_LEFT)){
 			(&player)->dx = -2.0f;
-		else
-			(&player)->dx = 0.0f;
+			if (!player.tongueOut) {
+				player.facing = PLAYER_IS_LEFT;
+			}}
+		else{
+			(&player)->dx = 0.0f;}
+
 		if (!player.tongueOut)
 		{
 			player.tongueX = 0;
@@ -163,6 +178,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueX += 70;
+				player.facing = PLAYER_IS_RIGHT;
 			}
 			if (kHeld & KEY_B)
 			{
@@ -170,6 +186,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueY += 70;
+				player.facing = PLAYER_IS_DOWN;
 			}
 			if (kHeld & KEY_X)
 			{
@@ -177,6 +194,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueY -= 70;
+				player.facing = PLAYER_IS_UP;
 			}
 			if (kHeld & KEY_Y)
 			{
@@ -184,6 +202,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueX -= 70;
+				player.facing = PLAYER_IS_LEFT;
 			}
 
 			if (player.tongueX == 0)
@@ -240,7 +259,10 @@ int main(int argc, char *argv[])
 		C2D_DrawSprite(&player.sprite);
 		if (player.tongueOut)
 		{
-			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+			if (player.facing == PLAYER_IS_UP) {
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, -1);
+			} else {
+			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);}
 		}
 
 		// C2D_DrawRectangle(0.0f, 0.0f, 0.0f, 20.0f, 90.0f, 255.0f, 0.0f, 0.0f, 1.0f);
