@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 			if (player.facing == PLAYER_IS_UP) {
 				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, -1);
 			} else {
-			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);}
+			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 1);}
 		}
 
 		C3D_FrameEnd(0);
