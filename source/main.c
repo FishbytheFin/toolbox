@@ -51,6 +51,18 @@ static int cameraX, cameraY; //x & y of camera's center
 // rand() % SCREEN_HEIGHT
 // C2D_SpriteSetRotation(&sprite->spr, C3D_Angle(rand() / (float)RAND_MAX));
 
+//Helper functions
+static float clamp(float n, float min, float max) {
+    if (n > max) {
+      return max;
+    } else if (n < min) {
+      return min;
+    } else {
+      return n;
+    }
+  }
+
+//Game loop functions
 static void init()
 {
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
@@ -143,12 +155,12 @@ int main(int argc, char *argv[])
 
 		u32 kHeld = hidKeysHeld();
 		if ((kHeld & KEY_UP)) {
-			(&player)->dy = -2.0f;
+			(&player)->dy = clamp(player.dy - 0.5, -2.0f, 2.0f);
 			if (!player.tongueOut) {
 				player.facing = PLAYER_IS_UP;
 			}}
 		else if ((kHeld & KEY_DOWN)){
-			(&player)->dy = 2.0f;
+			(&player)->dy = clamp(player.dy + 0.5, -2.0f, 2.0f);
 			if (!player.tongueOut) {
 				player.facing = PLAYER_IS_DOWN;
 			}}
@@ -156,12 +168,12 @@ int main(int argc, char *argv[])
 			(&player)->dy = 0.0f;}
 
 		if ((kHeld & KEY_RIGHT)){
-			(&player)->dx = 2.0f;
+			(&player)->dx = clamp(player.dx + 0.5, -2.0f, 2.0f);
 			if (!player.tongueOut) {
 				player.facing = PLAYER_IS_RIGHT;
 			}}
 		else if ((kHeld & KEY_LEFT)){
-			(&player)->dx = -2.0f;
+			(&player)->dx = clamp(player.dx - 0.5, -2.0f, 2.0f);
 			if (!player.tongueOut) {
 				player.facing = PLAYER_IS_LEFT;
 			}}
