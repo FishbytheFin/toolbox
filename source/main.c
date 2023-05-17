@@ -40,6 +40,15 @@ typedef struct
 	float maxTongueX, maxTongueY; // The max stretch X & Y of the tip of the tongue for current lick
 } Player;
 
+
+typedef struct 
+{
+	C2D_Sprite sprite;// Sprite
+	float dx, dy;// velocity
+	int x, y;// position
+	int w, h;// width, height
+} ScrewEnemy;
+
 static C2D_SpriteSheet spriteSheet;
 static Sprite sprites[4];
 static Player player;
@@ -68,6 +77,11 @@ static void init()
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
 	srand(time(NULL));
 
+	
+	
+}
+
+static void initPlayer() {
 	Player *p = &player;
 
 	C2D_SpriteFromSheet(&p->sprite, spriteSheet, TEMP_PLAYER_SPRITE);
