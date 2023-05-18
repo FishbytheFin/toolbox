@@ -12,6 +12,15 @@
 
 #define TEMP_PLAYER_SPRITE 0
 
+#define SCREW_SPRITE_OFFSET 1
+
+#define SCREW_IDLE_SPRITE_0 SCREW_SPRITE_OFFSET
+#define SCREW_IDLE_SPRITE_1 SCREW_SPRITE_OFFSET + 1
+
+#define SCREW_LAUNCH_SPRITE_0 SCREW_SPRITE_OFFSET + 2
+#define SCREW_LAUNCH_SPRITE_1 SCREW_SPRITE_OFFSET + 3
+#define SCREW_LAUNCH_SPRITE_2 SCREW_SPRITE_OFFSET + 4
+
 #define PLAYER_IS_UP 0
 #define PLAYER_IS_RIGHT 1
 #define PLAYER_IS_DOWN 2
@@ -44,12 +53,14 @@ typedef struct
 typedef struct 
 {
 	C2D_Sprite sprite;// Sprite
+	int animationFrame;//Animation frame to use
 	float dx, dy;// velocity
-	int x, y;// position
+	float x, y;// position
 	int w, h;// width, height
 } ScrewEnemy;
 
 static C2D_SpriteSheet spriteSheet;
+static ScrewEnemy screws[3];
 static Sprite sprites[4];
 static Player player;
 static int frame;
@@ -77,7 +88,8 @@ static void init()
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
 	srand(time(NULL));
 
-	
+	initPlayer();
+	initScrews();
 	
 }
 
@@ -93,6 +105,21 @@ static void initPlayer() {
 	p->x = SCREEN_WIDTH / 2;
 	p->y = SCREEN_HEIGHT / 2;
 	p->tongueOut = false;
+}
+
+static void initScrews() {
+	for (size_t i = 0; i < 3; i++)
+	{
+		ScrewEnemy* screw = &screws[i];
+
+		// Random image, position, rotation and speed
+		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
+		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&screw->sprite, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
+		C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
+		screw->dx = rand()*4.0f/RAND_MAX - 2.0f;
+		screw->dy = rand()*4.0f/RAND_MAX - 2.0f;
+	}
 }
 
 static void movePlayer()
@@ -282,6 +309,10 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
+		//Draw Screws
+		for (size_t i = 0; i < 3; i ++)
+			C2D_DrawSprite(&screws[i].sprite);
+
 		//Draw player
 		C2D_DrawSprite(&player.sprite);
 		//Draw tongue
