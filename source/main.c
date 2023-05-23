@@ -12,6 +12,13 @@
 
 #define TEMP_PLAYER_SPRITE 0
 
+#define PLAYER_IS_UP 0
+#define PLAYER_IS_RIGHT 1
+#define PLAYER_IS_DOWN 2
+#define PLAYER_IS_LEFT 3
+
+#define MAX_TONGUE_FRAMES 20
+
 #define SCREW_SPRITE_OFFSET 1
 
 #define SCREW_IDLE_SPRITE_0 SCREW_SPRITE_OFFSET
@@ -21,12 +28,7 @@
 #define SCREW_LAUNCH_SPRITE_1 SCREW_SPRITE_OFFSET + 3
 #define SCREW_LAUNCH_SPRITE_2 SCREW_SPRITE_OFFSET + 4
 
-#define PLAYER_IS_UP 0
-#define PLAYER_IS_RIGHT 1
-#define PLAYER_IS_DOWN 2
-#define PLAYER_IS_LEFT 3
-
-#define MAX_TONGUE_FRAMES 20
+#define SCREW_COUNT 3
 
 // player height: 48px
 typedef struct
@@ -60,7 +62,7 @@ typedef struct
 } ScrewEnemy;
 
 static C2D_SpriteSheet spriteSheet;
-static ScrewEnemy screws[3];
+static ScrewEnemy screws[SCREW_COUNT];
 static Sprite sprites[4];
 static Player player;
 static int frame;
@@ -108,7 +110,7 @@ static void initPlayer() {
 }
 
 static void initScrews() {
-	for (size_t i = 0; i < 3; i++)
+	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
 		ScrewEnemy* screw = &screws[i];
 
@@ -130,6 +132,22 @@ static void movePlayer()
 	p->y = p->y + p->dy;
 	p->x = p->x + p->dx;
 }
+
+static void screwFrame() {
+	for (size_t i = 0; i < SCREW_COUNT; i++)
+	{
+	ScrewEnemy* screw = &screws[i];
+	if ((rand() % 600) == 4) {
+
+	}
+	C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+
+	screw->y = screw->y + screw->dy;
+	screw->x = screw->x + screw->dx;
+	
+	}
+}
+
 
 static void update()
 {
