@@ -28,6 +28,8 @@
 #define SCREW_LAUNCH_SPRITE_1 SCREW_SPRITE_OFFSET + 3
 #define SCREW_LAUNCH_SPRITE_2 SCREW_SPRITE_OFFSET + 4
 
+#define SCREW_SIZE 16
+
 #define SCREW_COUNT 3
 
 // player height: 48px
@@ -56,9 +58,11 @@ typedef struct
 {
 	C2D_Sprite sprite;// Sprite
 	int animationFrame;//Animation frame to use
+	int frameTime;//Frames until next animation
 	float dx, dy;// velocity
 	float x, y;// position
-	int w, h;// width, height
+	bool isLaunching;
+	int lauchFrame;
 } ScrewEnemy;
 
 static C2D_SpriteSheet spriteSheet;
@@ -114,13 +118,15 @@ static void initScrews() {
 	{
 		ScrewEnemy* screw = &screws[i];
 
-		// Random image, position, rotation and speed
 		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
 		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
 		C2D_SpriteSetPos(&screw->sprite, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
-		C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
+		//C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
 		screw->dx = rand()*4.0f/RAND_MAX - 2.0f;
 		screw->dy = rand()*4.0f/RAND_MAX - 2.0f;
+
+		screw->lauchFrame = 0;
+		screw->isLaunching = false;
 	}
 }
 
@@ -137,8 +143,26 @@ static void screwFrame() {
 	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
 	ScrewEnemy* screw = &screws[i];
-	if ((rand() % 600) == 4) {
+	if (!(screw->isLaunching) && (rand() % 600) == 4) {
+		screw->isLaunching = true;
+		screw->lauchFrame = 60;
+		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
+		screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
+	}
 
+	if (screw->isLaunching) {
+
+	} else {
+		screw->frameTime--;
+		if (screw->frameTime == 0) {
+			if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2)) {
+				screw->frameTime = 30;
+				screw->animationFrame = SCREW_IDLE_SPRITE_0;
+			} else {
+				screw->animationFrame++;
+			}
+			C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+		}
 	}
 	C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
 
