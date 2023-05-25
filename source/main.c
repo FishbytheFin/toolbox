@@ -137,7 +137,7 @@ static void init()
 	initScrews();
 }
 
-static void movePlayer()
+static void playerFrame()
 {
 	Player *p = &player;
 	C2D_SpriteMove(&p->sprite, p->dx, p->dy);
