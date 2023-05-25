@@ -19,6 +19,19 @@
 
 #define MAX_TONGUE_FRAMES 20
 
+#define SCREW_SPRITE_OFFSET 1
+
+#define SCREW_IDLE_SPRITE_0 SCREW_SPRITE_OFFSET
+#define SCREW_IDLE_SPRITE_1 SCREW_SPRITE_OFFSET + 1
+
+#define SCREW_LAUNCH_SPRITE_0 SCREW_SPRITE_OFFSET + 2
+#define SCREW_LAUNCH_SPRITE_1 SCREW_SPRITE_OFFSET + 3
+#define SCREW_LAUNCH_SPRITE_2 SCREW_SPRITE_OFFSET + 4
+
+#define SCREW_SIZE 16
+
+#define SCREW_COUNT 3
+
 // player height: 48px
 typedef struct
 {
@@ -40,7 +53,20 @@ typedef struct
 	float maxTongueX, maxTongueY; // The max stretch X & Y of the tip of the tongue for current lick
 } Player;
 
+
+typedef struct 
+{
+	C2D_Sprite sprite;// Sprite
+	int animationFrame;//Animation frame to use
+	int frameTime;//Frames until next animation
+	float dx, dy;// velocity
+	float x, y;// position
+	bool isLaunching;
+	int lauchFrame;
+} ScrewEnemy;
+
 static C2D_SpriteSheet spriteSheet;
+static ScrewEnemy screws[SCREW_COUNT];
 static Sprite sprites[4];
 static Player player;
 static int frame;
@@ -74,6 +100,12 @@ static void init()
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
 	srand(time(NULL));
 
+	initPlayer();
+	initScrews();
+	
+}
+
+static void initPlayer() {
 	Player *p = &player;
 
 	C2D_SpriteFromSheet(&p->sprite, spriteSheet, TEMP_PLAYER_SPRITE);
@@ -87,6 +119,23 @@ static void init()
 	p->tongueOut = false;
 }
 
+static void initScrews() {
+	for (size_t i = 0; i < SCREW_COUNT; i++)
+	{
+		ScrewEnemy* screw = &screws[i];
+
+		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
+		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&screw->sprite, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
+		//C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
+		screw->dx = rand()*4.0f/RAND_MAX - 2.0f;
+		screw->dy = rand()*4.0f/RAND_MAX - 2.0f;
+
+		screw->lauchFrame = 0;
+		screw->isLaunching = false;
+	}
+}
+
 static void movePlayer()
 {
 	Player *p = &player;
@@ -95,6 +144,40 @@ static void movePlayer()
 	p->y = p->y + p->dy;
 	p->x = p->x + p->dx;
 }
+
+static void screwFrame() {
+	for (size_t i = 0; i < SCREW_COUNT; i++)
+	{
+	ScrewEnemy* screw = &screws[i];
+	if (!(screw->isLaunching) && (rand() % 600) == 4) {
+		screw->isLaunching = true;
+		screw->lauchFrame = 60;
+		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
+		screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
+	}
+
+	if (screw->isLaunching) {
+
+	} else {
+		screw->frameTime--;
+		if (screw->frameTime == 0) {
+			if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2)) {
+				screw->frameTime = 30;
+				screw->animationFrame = SCREW_IDLE_SPRITE_0;
+			} else {
+				screw->animationFrame++;
+			}
+			C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+		}
+	}
+	C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+
+	screw->y = screw->y + screw->dy;
+	screw->x = screw->x + screw->dx;
+	
+	}
+}
+
 
 static void update()
 {
@@ -290,7 +373,15 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
+<<<<<<< HEAD
 		// Draw player
+=======
+		//Draw Screws
+		for (size_t i = 0; i < 3; i ++)
+			C2D_DrawSprite(&screws[i].sprite);
+
+		//Draw player
+>>>>>>> f86ff2a5f2b75f8f96b41c3b2bb44ce1a5e7fb0d
 		C2D_DrawSprite(&player.sprite);
 		// Draw tongue
 		if (player.tongueOut)
