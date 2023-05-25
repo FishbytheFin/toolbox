@@ -43,7 +43,7 @@ typedef struct
 {
 	C2D_Sprite sprite;			  // Sprite
 	float dx, dy;				  // velocity
-	int x, y;					  // position
+	float x, y;					  // position
 	int w, h;					  // width, height
 	int facing;					  // 0, 1, 2, 3 = up, right, down, left
 	bool tongueOut;				  // true if tongue is out
@@ -53,14 +53,13 @@ typedef struct
 	float maxTongueX, maxTongueY; // The max stretch X & Y of the tip of the tongue for current lick
 } Player;
 
-
-typedef struct 
+typedef struct
 {
-	C2D_Sprite sprite;// Sprite
-	int animationFrame;//Animation frame to use
-	int frameTime;//Frames until next animation
-	float dx, dy;// velocity
-	float x, y;// position
+	C2D_Sprite sprite;	// Sprite
+	int animationFrame; // Animation frame to use
+	int frameTime;		// Frames until next animation
+	float dx, dy;		// velocity
+	float x, y;			// position
 	bool isLaunching;
 	int lauchFrame;
 } ScrewEnemy;
@@ -71,35 +70,33 @@ static Sprite sprites[4];
 static Player player;
 static int frame;
 
-static int cameraX, cameraY; //x & y of camera's center
+static int cameraX, cameraY; // x & y of camera's center
 
 // Possibly useful info for later:
 // rand() % SCREEN_HEIGHT
 // C2D_SpriteSetRotation(&sprite->spr, C3D_Angle(rand() / (float)RAND_MAX));
 
-//Helper functions
-static float clamp(float n, float min, float max) {
-    if (n > max) {
-      return max;
-    } else if (n < min) {
-      return min;
-    } else {
-      return n;
-    }
-  }
-
-//Game loop functions
-static void init()
+// Helper functions
+static float clamp(float n, float min, float max)
 {
-	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
-	srand(time(NULL));
-
-	initPlayer();
-	initScrews();
-	
+	if (n > max)
+	{
+		return max;
+	}
+	else if (n < min)
+	{
+		return min;
+	}
+	else
+	{
+		return n;
+	}
 }
 
-static void initPlayer() {
+// Game loop functions
+
+static void initPlayer()
+{
 	Player *p = &player;
 
 	C2D_SpriteFromSheet(&p->sprite, spriteSheet, TEMP_PLAYER_SPRITE);
@@ -113,24 +110,34 @@ static void initPlayer() {
 	p->tongueOut = false;
 }
 
-static void initScrews() {
+static void initScrews()
+{
 	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
-		ScrewEnemy* screw = &screws[i];
+		ScrewEnemy *screw = &screws[i];
 
 		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
 		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
 		C2D_SpriteSetPos(&screw->sprite, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
-		//C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
-		screw->dx = rand()*4.0f/RAND_MAX - 2.0f;
-		screw->dy = rand()*4.0f/RAND_MAX - 2.0f;
+		// C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
+		screw->dx = rand() * 4.0f / RAND_MAX - 2.0f;
+		screw->dy = rand() * 4.0f / RAND_MAX - 2.0f;
 
 		screw->lauchFrame = 0;
 		screw->isLaunching = false;
 	}
 }
 
-static void playerFrame()
+static void init()
+{
+	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
+	srand(time(NULL));
+
+	initPlayer();
+	initScrews();
+}
+
+static void movePlayer()
 {
 	Player *p = &player;
 	C2D_SpriteMove(&p->sprite, p->dx, p->dy);
@@ -139,39 +146,45 @@ static void playerFrame()
 	p->x = p->x + p->dx;
 }
 
-static void screwFrame() {
+static void screwFrame()
+{
 	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
-	ScrewEnemy* screw = &screws[i];
-	if (!(screw->isLaunching) && (rand() % 600) == 4) {
-		screw->isLaunching = true;
-		screw->lauchFrame = 60;
-		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
-		screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
-	}
-
-	if (screw->isLaunching) {
-
-	} else {
-		screw->frameTime--;
-		if (screw->frameTime == 0) {
-			if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2)) {
-				screw->frameTime = 30;
-				screw->animationFrame = SCREW_IDLE_SPRITE_0;
-			} else {
-				screw->animationFrame++;
-			}
-			C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+		ScrewEnemy *screw = &screws[i];
+		if (!(screw->isLaunching) && (rand() % 600) == 4)
+		{
+			screw->isLaunching = true;
+			screw->lauchFrame = 60;
+			C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
+			screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
 		}
-	}
-	C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
 
-	screw->y = screw->y + screw->dy;
-	screw->x = screw->x + screw->dx;
-	
+		if (screw->isLaunching)
+		{
+		}
+		else
+		{
+			screw->frameTime--;
+			if (screw->frameTime == 0)
+			{
+				if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2))
+				{
+					screw->frameTime = 30;
+					screw->animationFrame = SCREW_IDLE_SPRITE_0;
+				}
+				else
+				{
+					screw->animationFrame++;
+				}
+				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+			}
+		}
+		C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+
+		screw->y = screw->y + screw->dy;
+		screw->x = screw->x + screw->dx;
 	}
 }
-
 
 static void update()
 {
@@ -238,31 +251,47 @@ int main(int argc, char *argv[])
 			break; // break in order to return to hbmenu
 
 		u32 kHeld = hidKeysHeld();
-		if ((kHeld & KEY_UP)) {
+		if ((kHeld & KEY_UP))
+		{
 			(&player)->dy = clamp(player.dy - 0.5, -2.0f, 2.0f);
-			if (!player.tongueOut) {
+			if (!player.tongueOut)
+			{
 				player.facing = PLAYER_IS_UP;
-			}}
-		else if ((kHeld & KEY_DOWN)){
+			}
+		}
+		else if ((kHeld & KEY_DOWN))
+		{
 			(&player)->dy = clamp(player.dy + 0.5, -2.0f, 2.0f);
-			if (!player.tongueOut) {
+			if (!player.tongueOut)
+			{
 				player.facing = PLAYER_IS_DOWN;
-			}}
-		else{
-			(&player)->dy = 0.0f;}
+			}
+		}
+		else
+		{
+			(&player)->dy = 0.0f;
+		}
 
-		if ((kHeld & KEY_RIGHT)){
+		if ((kHeld & KEY_RIGHT))
+		{
 			(&player)->dx = clamp(player.dx + 0.5, -2.0f, 2.0f);
-			if (!player.tongueOut) {
+			if (!player.tongueOut)
+			{
 				player.facing = PLAYER_IS_RIGHT;
-			}}
-		else if ((kHeld & KEY_LEFT)){
+			}
+		}
+		else if ((kHeld & KEY_LEFT))
+		{
 			(&player)->dx = clamp(player.dx - 0.5, -2.0f, 2.0f);
-			if (!player.tongueOut) {
+			if (!player.tongueOut)
+			{
 				player.facing = PLAYER_IS_LEFT;
-			}}
-		else{
-			(&player)->dx = 0.0f;}
+			}
+		}
+		else
+		{
+			(&player)->dx = 0.0f;
+		}
 
 		if (!player.tongueOut)
 		{
@@ -352,19 +381,23 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
-		//Draw Screws
-		for (size_t i = 0; i < 3; i ++)
+		// Draw Screws
+		for (size_t i = 0; i < 3; i++)
 			C2D_DrawSprite(&screws[i].sprite);
 
-		//Draw player
+		// Draw player
 		C2D_DrawSprite(&player.sprite);
-		//Draw tongue
+		// Draw tongue
 		if (player.tongueOut)
 		{
-			if (player.facing == PLAYER_IS_UP) {
+			if (player.facing == PLAYER_IS_UP)
+			{
 				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, -1);
-			} else {
-			C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 1);}
+			}
+			else
+			{
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 1);
+			}
 		}
 
 		C3D_FrameEnd(0);
