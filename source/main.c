@@ -382,21 +382,22 @@ int main(int argc, char *argv[])
 
 		// Draw sprites
 		// Draw Screws
-		for (size_t i = 0; i < 3; i++)
+		for (size_t i = 0; i < 3; i++) {
 			C2D_DrawSprite(&screws[i].sprite);
+		}
 
-		// Draw player
-		C2D_DrawSprite(&player.sprite);
-		// Draw tongue
+		// Draw player & tongue
 		if (player.tongueOut)
 		{
 			if (player.facing == PLAYER_IS_UP)
 			{
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, -1);
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawSprite(&player.sprite);
 			}
 			else
 			{
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 1);
+				C2D_DrawSprite(&player.sprite);
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
 			}
 		}
 
