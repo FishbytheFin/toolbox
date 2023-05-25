@@ -70,7 +70,7 @@ static Sprite sprites[4];
 static Player player;
 static int frame;
 
-static int cameraX, cameraY; // x & y of camera's center
+static float cameraX, cameraY; // x & y of camera's center
 
 // Possibly useful info for later:
 // rand() % SCREEN_HEIGHT
@@ -140,10 +140,13 @@ static void init()
 static void playerFrame()
 {
 	Player *p = &player;
-	C2D_SpriteMove(&p->sprite, p->dx, p->dy);
 
 	p->y = p->y + p->dy;
 	p->x = p->x + p->dx;
+	cameraX = p->x;
+	cameraY = p->y;
+
+	C2D_SpriteSetPos(&p->sprite, p->x - cameraX, p->y - cameraY);
 }
 
 static void screwFrame()
@@ -391,13 +394,13 @@ int main(int argc, char *argv[])
 		{
 			if (player.facing == PLAYER_IS_UP)
 			{
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x - cameraX, player.tongueY + 5 + player.y - cameraY, C2D_Color32(255, 80, 80, 255), 3, 0);
 				C2D_DrawSprite(&player.sprite);
 			}
 			else
 			{
 				C2D_DrawSprite(&player.sprite);
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY + 5 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x - cameraX, player.tongueY + 5 + player.y - cameraY, C2D_Color32(255, 80, 80, 255), 3, 0);
 			}
 		}
 
