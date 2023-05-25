@@ -2,5 +2,9 @@
 #pragma once
 
 #define sprites_player1_idx 0
-#define sprites_temp_player_idx 1
-#define sprites_download_idx 2
+#define sprites_screw0_idx 1
+#define sprites_screw1_idx 2
+#define sprites_screw2_idx 3
+#define sprites_screw3_idx 4
+#define sprites_screw4_idx 5
+#define sprites_download_idx 6
