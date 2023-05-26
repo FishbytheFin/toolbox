@@ -1,5 +1,10 @@
 --atlas -f rgba8888 -z auto
 player1.png
+playerdown0.png
+playerdown1.png
+playerdown2.png
+playerdown3.png
+playerdown4.png
 screw0.png
 screw1.png
 screw2.png
