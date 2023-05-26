@@ -93,6 +93,16 @@ static float clamp(float n, float min, float max)
 	}
 }
 
+static float getCameraXOffset()
+{
+	return -cameraX + (SCREEN_WIDTH / 2);
+}
+
+static float getCameraYOffset()
+{
+	return -cameraY + (SCREEN_HEIGHT / 2);
+}
+
 // Game loop functions
 
 static void initPlayer()
@@ -146,7 +156,7 @@ static void playerFrame()
 	cameraX = p->x;
 	cameraY = p->y;
 
-	C2D_SpriteSetPos(&p->sprite, p->x - cameraX, p->y - cameraY);
+	C2D_SpriteSetPos(&p->sprite, p->x + getCameraXOffset(), p->y + getCameraYOffset());
 }
 
 static void screwFrame()
@@ -182,7 +192,8 @@ static void screwFrame()
 				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
 			}
 		}
-		C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+		// C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+		C2D_SpriteSetPos(&screw->sprite, screw->x + getCameraXOffset(), screw->y + getCameraYOffset());
 
 		screw->y = screw->y + screw->dy;
 		screw->x = screw->x + screw->dx;
@@ -385,7 +396,8 @@ int main(int argc, char *argv[])
 
 		// Draw sprites
 		// Draw Screws
-		for (size_t i = 0; i < 3; i++) {
+		for (size_t i = 0; i < 3; i++)
+		{
 			C2D_DrawSprite(&screws[i].sprite);
 		}
 
@@ -394,14 +406,18 @@ int main(int argc, char *argv[])
 		{
 			if (player.facing == PLAYER_IS_UP)
 			{
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x - cameraX, player.tongueY + 5 + player.y - cameraY, C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x + getCameraXOffset(), player.y + 5 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY + 5 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
 				C2D_DrawSprite(&player.sprite);
 			}
 			else
 			{
 				C2D_DrawSprite(&player.sprite);
-				C2D_DrawLine(player.x, player.y + 5, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x - cameraX, player.tongueY + 5 + player.y - cameraY, C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x + getCameraXOffset(), player.y + 5 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY + 5 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
 			}
+		}
+		else
+		{
+			C2D_DrawSprite(&player.sprite);
 		}
 
 		C3D_FrameEnd(0);
