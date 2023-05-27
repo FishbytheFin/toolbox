@@ -15,7 +15,6 @@
 #define PLAYER_DOWN_MOVE_1 2
 #define PLAYER_DOWN_MOVE_2 3
 #define PLAYER_DOWN_MOVE_3 4
-#define PLAYER_DOWN_MOVE_3 5
 
 #define PLAYER_IS_UP 0
 #define PLAYER_IS_RIGHT 1
@@ -51,6 +50,8 @@ typedef struct
 	float x, y;					  // position
 	int w, h;					  // width, height
 	int facing;					  // 0, 1, 2, 3 = up, right, down, left
+	int animationFrame;			  // Animation frame to use
+	int frameTime;				  // Frames until next animation
 	bool tongueOut;				  // true if tongue is out
 	bool tongueForward;			  // True if tongue is traveling away from the player
 	float tongueTimer;			  // # of frames until the tongue is put away
@@ -114,7 +115,7 @@ static void initPlayer()
 {
 	Player *p = &player;
 
-	C2D_SpriteFromSheet(&p->sprite, spriteSheet, TEMP_PLAYER_SPRITE);
+	C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_DOWN_IDLE);
 	C2D_SpriteSetCenter(&p->sprite, 0.5f, 0.5f);
 	C2D_SpriteSetPos(&p->sprite, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
@@ -123,6 +124,8 @@ static void initPlayer()
 	p->x = SCREEN_WIDTH / 2;
 	p->y = SCREEN_HEIGHT / 2;
 	p->tongueOut = false;
+	p->animationFrame = PLAYER_DOWN_IDLE;
+	p->frameTime = 60;
 }
 
 static void initScrews()
@@ -140,6 +143,7 @@ static void initScrews()
 
 		screw->lauchFrame = 0;
 		screw->isLaunching = false;
+		screw->frameTime = 0;
 	}
 }
 
@@ -155,6 +159,35 @@ static void init()
 static void playerFrame()
 {
 	Player *p = &player;
+
+	p->frameTime--;
+	if (p->frameTime == 0)
+	{
+		if (p->facing == PLAYER_IS_DOWN)
+		{
+			if (p->dy != 0)
+			{
+
+				if ((p->animationFrame >= PLAYER_DOWN_MOVE_3) || (p->animationFrame < PLAYER_DOWN_MOVE_0))
+				{
+					C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_DOWN_MOVE_0);
+					p->animationFrame = PLAYER_DOWN_MOVE_0;
+				}
+				else
+				{
+					p->animationFrame++;
+					C2D_SpriteFromSheet(&p->sprite, spriteSheet, p->animationFrame);
+				}
+			}
+			else
+			{
+				C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_DOWN_IDLE);
+				p->animationFrame = PLAYER_DOWN_IDLE;
+			}
+		}
+		p->frameTime = 12;
+		C2D_SpriteSetCenter(&p->sprite, 0.5f, 0.5f);
+	}
 
 	p->y = p->y + p->dy;
 	p->x = p->x + p->dx;
@@ -196,6 +229,7 @@ static void screwFrame()
 				}
 				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
 			}
+			C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
 		}
 		// C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
 		C2D_SpriteSetPos(&screw->sprite, screw->x + getCameraXOffset(), screw->y + getCameraYOffset());
@@ -411,13 +445,13 @@ int main(int argc, char *argv[])
 		{
 			if (player.facing == PLAYER_IS_UP)
 			{
-				C2D_DrawLine(player.x + getCameraXOffset(), player.y + 5 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY + 5 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
 				C2D_DrawSprite(&player.sprite);
 			}
 			else
 			{
 				C2D_DrawSprite(&player.sprite);
-				C2D_DrawLine(player.x + getCameraXOffset(), player.y + 5 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY + 5 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
+				C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
 			}
 		}
 		else
