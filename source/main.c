@@ -36,11 +36,14 @@
 
 #define SCREW_COUNT 3
 
+#define GROUND_SPRITE_OFFSET 10
+
+
 // player height: 48px
 typedef struct
 {
 	C2D_Sprite spr;
-	float dx, dy; // velocity
+	float x, y; // position
 } Sprite;
 
 typedef struct
@@ -72,7 +75,7 @@ typedef struct
 
 static C2D_SpriteSheet spriteSheet;
 static ScrewEnemy screws[SCREW_COUNT];
-static Sprite sprites[4];
+static Sprite groundTiles[10];
 static Player player;
 static int frame;
 
@@ -147,6 +150,18 @@ static void initScrews()
 	}
 }
 
+static void initGroundTiles()
+{
+	for (size_t i = 0; i < 10; i++)
+	{
+		Sprite *tile = &groundTiles[i];
+
+		C2D_SpriteFromSheet(&tile->spr, spriteSheet, GROUND_SPRITE_OFFSET + i);
+		C2D_SpriteSetCenter(&tile->spr, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&tile->spr, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
+	}
+}
+
 static void init()
 {
 	size_t imgCount = C2D_SpriteSheetCount(spriteSheet);
@@ -154,6 +169,7 @@ static void init()
 
 	initPlayer();
 	initScrews();
+	initGroundTiles();
 }
 
 static void playerFrame()
@@ -438,6 +454,11 @@ int main(int argc, char *argv[])
 		for (size_t i = 0; i < 3; i++)
 		{
 			C2D_DrawSprite(&screws[i].sprite);
+		}
+
+		for (size_t i = 0; i < 10; i++)
+		{
+			C2D_DrawSprite(&groundTiles[i].spr);
 		}
 
 		// Draw player & tongue
