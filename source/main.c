@@ -79,6 +79,17 @@ static Player player;
 static int frame;
 
 static float cameraX, cameraY; // x & y of camera's center
+//screen 12.5 x 7.5
+static int mapLayout[10][7] = {{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0},
+							{0, 0, 0, 0, 0, 0, 0}};
 
 // Possibly useful info for later:
 // rand() % SCREEN_HEIGHT
