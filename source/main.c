@@ -38,7 +38,6 @@
 
 #define GROUND_SPRITE_OFFSET 10
 
-
 // player height: 48px
 typedef struct
 {
@@ -259,26 +258,6 @@ static void update()
 {
 	playerFrame();
 	screwFrame();
-}
-
-static void moveBoys()
-{
-	for (size_t i = 0; i < 4; i++)
-	{
-		Sprite *sprite = &sprites[i];
-
-		C2D_SpriteMove(&sprite->spr, sprite->dx, sprite->dy);
-		C2D_SpriteRotateDegrees(&sprite->spr, 1.0f);
-
-		// Check for collision with the screen boundaries
-		if ((sprite->spr.params.pos.x < sprite->spr.params.pos.w / 2.0f && sprite->dx < 0.0f) ||
-			(sprite->spr.params.pos.x > (SCREEN_WIDTH - (sprite->spr.params.pos.w / 2.0f)) && sprite->dx > 0.0f))
-			sprite->dx = -sprite->dx;
-
-		if ((sprite->spr.params.pos.y < sprite->spr.params.pos.h / 2.0f && sprite->dy < 0.0f) ||
-			(sprite->spr.params.pos.y > (SCREEN_HEIGHT - (sprite->spr.params.pos.h / 2.0f)) && sprite->dy > 0.0f))
-			sprite->dy = -sprite->dy;
-	}
 }
 
 int main(int argc, char *argv[])

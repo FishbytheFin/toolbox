@@ -11,4 +11,14 @@
 #define sprites_screw2_idx 7
 #define sprites_screw3_idx 8
 #define sprites_screw4_idx 9
-#define sprites_download_idx 10
+#define sprites_ground0_idx 10
+#define sprites_ground1_idx 11
+#define sprites_ground2_idx 12
+#define sprites_ground3_idx 13
+#define sprites_ground4_idx 14
+#define sprites_ground5_idx 15
+#define sprites_ground6_idx 16
+#define sprites_ground7_idx 17
+#define sprites_ground8_idx 18
+#define sprites_ground9_idx 19
+#define sprites_download_idx 20
