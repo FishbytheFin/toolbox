@@ -6,6 +6,19 @@
 #include <stdlib.h>
 #include <time.h>
 
+/*
+TODO:
+ADD HEALTH
+COLLISIONS
+FIX GROUND SPRITES
+MORE GROUND SPRITES
+MAZE
+MORE PLAYER SPRITES
+FIX SCREWS
+FINAL BOSS
+
+*/
+
 // Helpful Varibles :)
 #define SCREEN_WIDTH 400
 #define SCREEN_HEIGHT 240
@@ -74,7 +87,7 @@ typedef struct
 
 static C2D_SpriteSheet spriteSheet;
 static ScrewEnemy screws[SCREW_COUNT];
-static Sprite groundTiles[10];
+static Sprite groundTiles[16][10];
 static Player player;
 static int frame;
 
@@ -215,7 +228,7 @@ static void initScrews()
 
 		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
 		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
-		C2D_SpriteSetPos(&screw->sprite, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
+		C2D_SpriteSetPos(&screw->sprite, player.x, player.x);
 		// C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
 		screw->dx = rand() * 4.0f / RAND_MAX - 2.0f;
 		screw->dy = rand() * 4.0f / RAND_MAX - 2.0f;
@@ -228,13 +241,19 @@ static void initScrews()
 
 static void initGroundTiles()
 {
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < 16; i++)
 	{
-		Sprite *tile = &groundTiles[i];
+		for (size_t j = 0; j < 10; j++)
+		{
+			Sprite *tile = &groundTiles[i][j];
 
-		C2D_SpriteFromSheet(&tile->spr, spriteSheet, GROUND_SPRITE_OFFSET + i);
-		C2D_SpriteSetCenter(&tile->spr, 0.5f, 0.5f);
-		C2D_SpriteSetPos(&tile->spr, rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
+			C2D_SpriteFromSheet(&tile->spr, spriteSheet, GROUND_SPRITE_OFFSET + 9);
+			C2D_SpriteSetCenter(&tile->spr, 0.5f, 0.5f);
+			printf("%f", player.x);
+			tile->x = player.x - (8 * 32) + (32 * i);
+			tile->y = player.y - (5 * 32) + (32 * j);
+			C2D_SpriteSetPos(&tile->spr, tile->x, tile->y);
+		}
 	}
 }
 
@@ -294,50 +313,54 @@ static void screwFrame()
 	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
 		ScrewEnemy *screw = &screws[i];
-		if (!(screw->isLaunching) && (rand() % 600) == 4)
+		if ((screw->x - player.x) < 400 && (screw->y - player.y) < 400)
 		{
-			screw->isLaunching = true;
-			screw->lauchFrame = 60;
-			C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
-			screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
-		}
-
-		if (screw->isLaunching)
-		{
-		}
-		else
-		{
-			screw->frameTime--;
-			if (screw->frameTime == 0)
+			if (!(screw->isLaunching) && (rand() % 600) == 4)
 			{
-				if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2))
-				{
-					screw->frameTime = 30;
-					screw->animationFrame = SCREW_IDLE_SPRITE_0;
-				}
-				else
-				{
-					screw->animationFrame++;
-				}
-				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+				screw->isLaunching = true;
+				screw->lauchFrame = 60;
+				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
+				screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
 			}
-			C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
-		}
-		// C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
-		C2D_SpriteSetPos(&screw->sprite, screw->x + getCameraXOffset(), screw->y + getCameraYOffset());
 
-		screw->y = screw->y + screw->dy;
-		screw->x = screw->x + screw->dx;
+			if (screw->isLaunching)
+			{
+			}
+			else
+			{
+				screw->frameTime--;
+				if (screw->frameTime == 0)
+				{
+					if ((screw->animationFrame == SCREW_IDLE_SPRITE_1) || (screw->animationFrame == SCREW_LAUNCH_SPRITE_2))
+					{
+						screw->frameTime = 30;
+						screw->animationFrame = SCREW_IDLE_SPRITE_0;
+					}
+					else
+					{
+						screw->animationFrame++;
+					}
+					C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+				}
+				C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
+			}
+			// C2D_SpriteMove(&screw->sprite, screw->dx, screw->dy);
+			C2D_SpriteSetPos(&screw->sprite, screw->x + getCameraXOffset(), screw->y + getCameraYOffset());
+
+			screw->y = screw->y + screw->dy;
+			screw->x = screw->x + screw->dx;
+		}
 	}
 }
 
 static void drawGroundTiles()
 {
-	for (size_t i = 0; i < 23; i++)
+	for (size_t i = 0; i < 16; i++)
 	{
-		for (size_t j = 0; j < 38; j++)
+		for (size_t j = 0; j < 10; j++)
 		{
-			C2D_DrawSprite(&groundTiles[mapLayout[i + (int)(player.y / 32)][j + (int)(player.x / 32)]].spr);
+			C2D_SpriteSetPos(&groundTiles[i][j].spr, groundTiles[i][j].x + getCameraXOffset(), groundTiles[i][j].y + getCameraYOffset());
+			C2D_DrawSprite(&groundTiles[i][j].spr);
 		}
 	}
 }
