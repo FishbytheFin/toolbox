@@ -253,7 +253,7 @@ static void initGroundTiles()
 			// GROUND_SPRITE_OFFSET + 9
 			// GROUND_SPRITE_OFFSET + mapLayout[(int)(tile->y / 32)][(int)(tile->x / 32)]
 
-			C2D_SpriteFromSheet(&tile->spr, spriteSheet, GROUND_SPRITE_OFFSET + mapLayout[(int)(tile->y / 32)][(int)(tile->x / 32)]);
+			C2D_SpriteFromSheet(&tile->spr, spriteSheet, 4);
 			C2D_SpriteSetCenter(&tile->spr, 0.5f, 0.5f);
 
 			C2D_SpriteSetPos(&tile->spr, tile->x, tile->y);
@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
 		u32 kHeld = hidKeysHeld();
 		if ((kHeld & KEY_UP))
 		{
-			(&player)->dy = clamp(player.dy - 0.5, -5.0f, 5.0f);
+			(&player)->dy = clamp(player.dy - 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
 				player.facing = PLAYER_IS_UP;
@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
 		}
 		else if ((kHeld & KEY_DOWN))
 		{
-			(&player)->dy = clamp(player.dy + 0.5, -5.0f, 5.0f);
+			(&player)->dy = clamp(player.dy + 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
 				player.facing = PLAYER_IS_DOWN;
@@ -462,7 +462,7 @@ int main(int argc, char *argv[])
 
 		if ((kHeld & KEY_RIGHT))
 		{
-			(&player)->dx = clamp(player.dx + 0.5, -5.0f, 5.0f);
+			(&player)->dx = clamp(player.dx + 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
 				player.facing = PLAYER_IS_RIGHT;
@@ -470,7 +470,7 @@ int main(int argc, char *argv[])
 		}
 		else if ((kHeld & KEY_LEFT))
 		{
-			(&player)->dx = clamp(player.dx - 0.5, -5.0f, 5.0f);
+			(&player)->dx = clamp(player.dx - 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
 				player.facing = PLAYER_IS_LEFT;
