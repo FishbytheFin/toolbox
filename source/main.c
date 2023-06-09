@@ -253,7 +253,7 @@ static void initGroundTiles()
 			// GROUND_SPRITE_OFFSET + 9
 			// GROUND_SPRITE_OFFSET + mapLayout[(int)(tile->y / 32)][(int)(tile->x / 32)]
 
-			C2D_SpriteFromSheet(&tile->spr, spriteSheet, 4);
+			C2D_SpriteFromSheet(&tile->spr, spriteSheet, GROUND_SPRITE_OFFSET);
 			C2D_SpriteSetCenter(&tile->spr, 0.5f, 0.5f);
 
 			C2D_SpriteSetPos(&tile->spr, tile->x, tile->y);
