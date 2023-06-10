@@ -21,4 +21,7 @@
 #define sprites_ground7_idx 17
 #define sprites_ground8_idx 18
 #define sprites_ground9_idx 19
-#define sprites_download_idx 20
+#define sprites_ground10_idx 20
+#define sprites_ground11_idx 21
+#define sprites_ground12_idx 22
+#define sprites_download_idx 23
