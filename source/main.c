@@ -11,9 +11,7 @@ TODO:
 ADD HEALTH
 COLLISIONS
 FIX GROUND TILES
-MAZE
 MORE PLAYER SPRITES
-FIX SCREWS
 FINAL BOSS
 
 */
@@ -44,9 +42,9 @@ FINAL BOSS
 #define SCREW_LAUNCH_SPRITE_1 SCREW_SPRITE_OFFSET + 3
 #define SCREW_LAUNCH_SPRITE_2 SCREW_SPRITE_OFFSET + 4
 
-#define SCREW_SIZE 16
+#define SCREW_SIZE 32
 
-#define SCREW_COUNT 3
+#define SCREW_COUNT 50
 
 #define GROUND_SPRITE_OFFSET 10
 
@@ -78,13 +76,15 @@ typedef struct
 
 typedef struct
 {
-	C2D_Sprite sprite;	// Sprite
+	C2D_Sprite sprite; // Sprite
+	bool alive;
 	int animationFrame; // Animation frame to use
 	int frameTime;		// Frames until next animation
 	float dx, dy;		// velocity
 	float x, y;			// position
 	bool isLaunching;
 	int lauchFrame;
+	bool stuck;
 } ScrewEnemy;
 
 static C2D_SpriteSheet spriteSheet;
@@ -231,16 +231,21 @@ static void initScrews()
 	{
 		ScrewEnemy *screw = &screws[i];
 
+		screw->x = (rand() % (32 * 50));
+		screw->y = (rand() % (32 * 50));
+
 		C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_IDLE_SPRITE_0);
 		C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
-		C2D_SpriteSetPos(&screw->sprite, player.x, player.x);
+		C2D_SpriteSetPos(&screw->sprite, screw->x, screw->y);
 		// C2D_SpriteSetRotation(&screw->sprite, C3D_Angle(rand()/(float)RAND_MAX));
-		screw->dx = rand() * 4.0f / RAND_MAX - 2.0f;
-		screw->dy = rand() * 4.0f / RAND_MAX - 2.0f;
+		screw->dx = 0.0;
+		screw->dy = 0.0;
 
 		screw->lauchFrame = 0;
 		screw->isLaunching = false;
 		screw->frameTime = 0;
+		screw->alive = true;
+		screw->stuck = false;
 	}
 }
 
@@ -361,7 +366,7 @@ static void screwFrame()
 	for (size_t i = 0; i < SCREW_COUNT; i++)
 	{
 		ScrewEnemy *screw = &screws[i];
-		if ((screw->x - player.x) < 400 && (screw->y - player.y) < 400)
+		if (screw->alive && abs(screw->x - player.x) < 400 && abs(screw->y - player.y) < 400)
 		{
 			if (!(screw->isLaunching) && (rand() % 600) == 4)
 			{
@@ -369,10 +374,46 @@ static void screwFrame()
 				screw->lauchFrame = 60;
 				C2D_SpriteFromSheet(&screw->sprite, spriteSheet, SCREW_LAUNCH_SPRITE_0);
 				screw->animationFrame = SCREW_LAUNCH_SPRITE_0;
+				if (abs(screw->x - player.x) < 20)
+				{
+					screw->dx = 0.0;
+				}
+				else if ((screw->x - player.x) < 0)
+				{
+					screw->dx = 4.0;
+				}
+				else
+				{
+					screw->dx = -4.0;
+				}
+
+				if (abs(screw->y - player.y) < 20)
+				{
+					screw->dy = 0.0;
+				}
+				else if ((screw->y - player.y) < 0)
+				{
+					screw->dy = 4.0;
+				}
+				else
+				{
+					screw->dy = -4.0;
+				}
 			}
 
 			if (screw->isLaunching)
 			{
+				screw->lauchFrame--;
+				if (screw->lauchFrame == 0)
+				{
+					screw->isLaunching = false;
+					screw->dx = 0.0;
+					screw->dy = 0.0;
+					screw->frameTime = 0;
+					screw->animationFrame = SCREW_IDLE_SPRITE_0;
+					C2D_SpriteFromSheet(&screw->sprite, spriteSheet, screw->animationFrame);
+					C2D_SpriteSetCenter(&screw->sprite, 0.5f, 0.5f);
+				}
 			}
 			else
 			{
@@ -397,7 +438,21 @@ static void screwFrame()
 
 			screw->y = screw->y + screw->dy;
 			screw->x = screw->x + screw->dx;
+			if (player.tongueOut && !screw->stuck && player.x + player.tongueX >= screw->x && player.x + player.tongueX <= screw->x + 32 && player.y + 5 + player.tongueY >= screw->y && player.y + 5 + player.tongueY <= screw->y + 32)
+			{
+				screw->stuck = true;
+			}
+			if (screw->stuck)
+			{
+				screw->x = player.tongueX + player.x - 16;
+				screw->y = player.tongueY + player.y + 5 - 16;
+				if (!player.tongueOut)
+				{
+					screw->alive = false;
+				}
+			}
 		}
+		C2D_SpriteSetPos(&screw->sprite, screw->x + getCameraXOffset(), screw->y + getCameraYOffset());
 	}
 }
 
@@ -468,8 +523,8 @@ int main(int argc, char *argv[])
 	// Sandwhich
 	init();
 
-	printf("Hello, world!\n");
-	printf("I am sandwhich\n");
+	// printf("Hello, world!\n");
+	// printf("I am sandwhich\n");
 
 	// Main loop
 	while (aptMainLoop())
@@ -614,18 +669,21 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
-		// Draw Screws
-		for (size_t i = 0; i < 3; i++)
-		{
-			C2D_DrawSprite(&screws[i].sprite);
-		}
-
 		// for (size_t i = 0; i < 10; i++)
 		// {
 		// 	C2D_DrawSprite(&groundTiles[i].spr);
 		// }
 
 		drawGroundTiles();
+
+		// Draw Screws
+		for (size_t i = 0; i < SCREW_COUNT; i++)
+		{
+			if (screws[i].alive && abs(screws[i].x - player.x) < 400 && abs(screws[i].y - player.y) < 400)
+			{
+				C2D_DrawSprite(&screws[i].sprite);
+			}
+		}
 
 		// Draw player & tongue
 		if (player.tongueOut)
