@@ -72,6 +72,8 @@ typedef struct
 	float maxTongueX, maxTongueY; // The max stretch X & Y of the tip of the tongue for current lick
 	bool inBossFight;
 	int bossFightStartTimer;
+	int health;
+	int iFrames;
 } Player;
 
 typedef struct
@@ -90,6 +92,7 @@ typedef struct
 static C2D_SpriteSheet spriteSheet;
 static ScrewEnemy screws[SCREW_COUNT];
 static Sprite groundTiles[16][10];
+static Sprite hearts[3];
 static Player player;
 static int frame;
 
@@ -216,6 +219,18 @@ static void initPlayer()
 	C2D_SpriteSetCenter(&p->sprite, 0.5f, 0.5f);
 	C2D_SpriteSetPos(&p->sprite, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
+	for (size_t i = 0; i < 3; i++)
+	{
+		Sprite *heart = &hearts[i];
+		C2D_SpriteSetPos(&heart->spr, heart->x, heart->y);
+		heart->x = 18 + (28 * i);
+		heart->y = 18;
+
+		C2D_SpriteFromSheet(&heart->spr, spriteSheet, GROUND_SPRITE_OFFSET + 14);
+		C2D_SpriteSetCenter(&heart->spr, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&heart->spr, heart->x, heart->y);
+	}
+
 	p->dx = 0.0f;
 	p->dy = 0.0f;
 	p->x = (32 * 64) / 2;
@@ -223,6 +238,8 @@ static void initPlayer()
 	p->tongueOut = false;
 	p->animationFrame = PLAYER_DOWN_IDLE;
 	p->frameTime = 60;
+	p->health = 3;
+	p->iFrames = 250;
 }
 
 static void initScrews()
@@ -323,6 +340,11 @@ static void checkPlayerCollisions()
 static void playerFrame()
 {
 	Player *p = &player;
+
+	if (player.iFrames > 0)
+	{
+		player.iFrames--;
+	}
 
 	p->frameTime--;
 	if (p->frameTime == 0)
@@ -438,6 +460,12 @@ static void screwFrame()
 
 			screw->y = screw->y + screw->dy;
 			screw->x = screw->x + screw->dx;
+			if (screw->alive && !screw->stuck && player.iFrames == 0 && player.x < screw->x + 32 && player.x + 48 > screw->x && player.y < screw->y + 32 && player.y + 48 > screw->y)
+			{
+				player.health--;
+				player.iFrames = 250;
+				screw->alive = false;
+			}
 			if (player.tongueOut && !screw->stuck && player.x + player.tongueX >= screw->x && player.x + player.tongueX <= screw->x + 32 && player.y + 5 + player.tongueY >= screw->y && player.y + 5 + player.tongueY <= screw->y + 32)
 			{
 				screw->stuck = true;
@@ -449,6 +477,7 @@ static void screwFrame()
 				if (!player.tongueOut)
 				{
 					screw->alive = false;
+					player.health = clamp(player.health + 1, 0, 3);
 				}
 			}
 		}
@@ -535,7 +564,8 @@ int main(int argc, char *argv[])
 
 		// User input
 		u32 kDown = hidKeysDown();
-		if (kDown & KEY_START)
+
+		if (kDown & KEY_START || player.health == 0)
 			break; // break in order to return to hbmenu
 
 		u32 kHeld = hidKeysHeld();
@@ -669,10 +699,6 @@ int main(int argc, char *argv[])
 		C2D_SceneBegin(top);
 
 		// Draw sprites
-		// for (size_t i = 0; i < 10; i++)
-		// {
-		// 	C2D_DrawSprite(&groundTiles[i].spr);
-		// }
 
 		drawGroundTiles();
 
@@ -703,6 +729,26 @@ int main(int argc, char *argv[])
 		{
 			C2D_DrawSprite(&player.sprite);
 		}
+
+		for (size_t i = 0; i < 3; i++)
+		{
+			if (player.health - 1 < i)
+			{
+				C2D_SpriteFromSheet(&hearts[i].spr, spriteSheet, GROUND_SPRITE_OFFSET + 13);
+			}
+			else
+			{
+				C2D_SpriteFromSheet(&hearts[i].spr, spriteSheet, GROUND_SPRITE_OFFSET + 14);
+			}
+			C2D_SpriteSetPos(&hearts[i].spr, 18 + (28 * i), 18);
+			C2D_SpriteSetCenter(&hearts[i].spr, 0.5f, 0.5f);
+			C2D_DrawSprite(&hearts[i].spr);
+		}
+
+		//  for (size_t i = 0; i < 3; i++)
+		//  {
+		//  	C2D_DrawSprite(&hearts[i].spr);
+		//  }
 
 		C3D_FrameEnd(0);
 	}
