@@ -8,10 +8,7 @@
 
 /*
 TODO:
-ADD HEALTH
-COLLISIONS
 FIX GROUND TILES
-MORE PLAYER SPRITES
 FINAL BOSS
 
 */
@@ -25,6 +22,11 @@ FINAL BOSS
 #define PLAYER_DOWN_MOVE_1 2
 #define PLAYER_DOWN_MOVE_2 3
 #define PLAYER_DOWN_MOVE_3 4
+#define PLAYER_UP_IDLE 5
+#define PLAYER_UP_MOVE_0 6
+#define PLAYER_UP_MOVE_1 7
+#define PLAYER_UP_MOVE_2 8
+#define PLAYER_UP_MOVE_3 9
 
 #define PLAYER_IS_UP 0
 #define PLAYER_IS_RIGHT 1
@@ -33,7 +35,7 @@ FINAL BOSS
 
 #define MAX_TONGUE_FRAMES 20
 
-#define SCREW_SPRITE_OFFSET 6
+#define SCREW_SPRITE_OFFSET 11
 
 #define SCREW_IDLE_SPRITE_0 SCREW_SPRITE_OFFSET
 #define SCREW_IDLE_SPRITE_1 SCREW_SPRITE_OFFSET + 1
@@ -46,7 +48,7 @@ FINAL BOSS
 
 #define SCREW_COUNT 50
 
-#define GROUND_SPRITE_OFFSET 10
+#define GROUND_SPRITE_OFFSET 15
 
 // player height: 48px
 typedef struct
@@ -351,7 +353,7 @@ static void playerFrame()
 	{
 		if (p->facing == PLAYER_IS_DOWN)
 		{
-			if (p->dy != 0)
+			if (p->dy != 0 || p->dx != 0)
 			{
 
 				if ((p->animationFrame >= PLAYER_DOWN_MOVE_3) || (p->animationFrame < PLAYER_DOWN_MOVE_0))
@@ -369,6 +371,28 @@ static void playerFrame()
 			{
 				C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_DOWN_IDLE);
 				p->animationFrame = PLAYER_DOWN_IDLE;
+			}
+		}
+		else
+		{
+			if (p->dy != 0)
+			{
+
+				if ((p->animationFrame >= PLAYER_UP_MOVE_3) || (p->animationFrame < PLAYER_UP_MOVE_0))
+				{
+					C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_UP_MOVE_0);
+					p->animationFrame = PLAYER_UP_MOVE_0;
+				}
+				else
+				{
+					p->animationFrame++;
+					C2D_SpriteFromSheet(&p->sprite, spriteSheet, p->animationFrame);
+				}
+			}
+			else
+			{
+				C2D_SpriteFromSheet(&p->sprite, spriteSheet, PLAYER_UP_IDLE);
+				p->animationFrame = PLAYER_UP_IDLE;
 			}
 		}
 		p->frameTime = 12;
@@ -595,7 +619,7 @@ int main(int argc, char *argv[])
 			(&player)->dx = clamp(player.dx + 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
-				player.facing = PLAYER_IS_RIGHT;
+				player.facing = PLAYER_IS_DOWN;
 			}
 		}
 		else if ((kHeld & KEY_LEFT))
@@ -603,7 +627,7 @@ int main(int argc, char *argv[])
 			(&player)->dx = clamp(player.dx - 0.5, -3.0f, 3.0f);
 			if (!player.tongueOut)
 			{
-				player.facing = PLAYER_IS_LEFT;
+				player.facing = PLAYER_IS_DOWN;
 			}
 		}
 		else
@@ -621,7 +645,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueX += 70;
-				player.facing = PLAYER_IS_RIGHT;
+				player.facing = PLAYER_IS_DOWN;
 			}
 			if (kHeld & KEY_B)
 			{
@@ -645,7 +669,7 @@ int main(int argc, char *argv[])
 				player.tongueForward = true;
 				player.tongueTimer = 0;
 				player.tongueX -= 70;
-				player.facing = PLAYER_IS_LEFT;
+				player.facing = PLAYER_IS_DOWN;
 			}
 
 			if (player.tongueX == 0)
