@@ -31,3 +31,9 @@
 #define sprites_ground12_idx 27
 #define sprites_heart0_idx 28
 #define sprites_heart1_idx 29
+#define sprites_boss0_idx 30
+#define sprites_boss1_idx 31
+#define sprites_boss2_idx 32
+#define sprites_bomb0_idx 33
+#define sprites_cave_idx 34
+#define sprites_win_idx 35

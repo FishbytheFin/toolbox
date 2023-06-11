@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 /*
 TODO:
@@ -50,6 +51,13 @@ FINAL BOSS
 
 #define GROUND_SPRITE_OFFSET 15
 
+#define BOSS_SPRITE_0 30
+#define BOSS_SPRITE_1 31
+#define BOSS_SPRITE_2 32
+
+#define BOMB_SPRITE BOSS_SPRITE_0 + 3
+#define CAVE_SPRITE BOMB_SPRITE + 1
+
 // player height: 48px
 typedef struct
 {
@@ -80,6 +88,29 @@ typedef struct
 
 typedef struct
 {
+	C2D_Sprite spr;
+	float x, y;		  // position
+	int spriteNumber; // Number of the sprite in sprite sheet
+	float dx, dy;
+	float moveAngle;
+	bool alive;
+} Bomb;
+
+typedef struct
+{
+	C2D_Sprite sprite;	// Sprite
+	float dx, dy;		// velocity
+	float x, y;			// position
+	int w, h;			// width, height
+	int animationFrame; // Animation frame to use
+	int frameTime;		// Frames until next animation
+	int iFrames;
+	int health;
+	int attackFrames;
+} Boss;
+
+typedef struct
+{
 	C2D_Sprite sprite; // Sprite
 	bool alive;
 	int animationFrame; // Animation frame to use
@@ -95,8 +126,12 @@ static C2D_SpriteSheet spriteSheet;
 static ScrewEnemy screws[SCREW_COUNT];
 static Sprite groundTiles[16][10];
 static Sprite hearts[3];
+static Bomb bomb;
 static Player player;
+static Boss boss;
+static C2D_Sprite cave;
 static int frame;
+static Sprite win;
 
 static float cameraX, cameraY; // x & y of camera's center
 // screen 12.5 x 7.5
@@ -243,6 +278,48 @@ static void initPlayer()
 	p->health = 3;
 	p->iFrames = 250;
 }
+// i sneezed
+// say bless you
+
+static void initBoss()
+{
+
+	player.x = SCREEN_WIDTH / 2;
+	player.y = SCREEN_HEIGHT / 2;
+	player.dx = 0;
+	player.dy = 0;
+
+	Boss *b = &boss;
+
+	C2D_SpriteFromSheet(&b->sprite, spriteSheet, BOSS_SPRITE_0);
+	C2D_SpriteSetCenter(&b->sprite, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&b->sprite, (SCREEN_WIDTH / 2) - 80, (SCREEN_HEIGHT / 2) - 40);
+
+	b->dx = 0.0f;
+	b->dy = 0.0f;
+	b->x = (SCREEN_WIDTH / 2) - 80;
+	b->y = (SCREEN_HEIGHT / 2) - 40;
+	b->animationFrame = BOSS_SPRITE_0;
+	b->frameTime = 60;
+	b->health = 3;
+	b->iFrames = 30;
+	b->attackFrames = 300;
+
+	Bomb *bo = &bomb;
+	C2D_SpriteFromSheet(&bo->spr, spriteSheet, BOMB_SPRITE);
+	C2D_SpriteSetCenter(&bo->spr, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&bo->spr, 0, 0);
+	bo->dx = 0.0f;
+	bo->dy = 0.0f;
+	bo->x = 0;
+	bo->y = 0;
+	bo->moveAngle = 0;
+	bo->alive = false;
+
+	C2D_SpriteFromSheet(&cave, spriteSheet, CAVE_SPRITE);
+	C2D_SpriteSetCenter(&cave, 0.0f, 0.0f);
+	C2D_SpriteSetPos(&cave, 0, 0);
+}
 
 static void initScrews()
 {
@@ -330,6 +407,7 @@ static void checkPlayerCollisions()
 				if (x < groundTiles[i][j].x + 32 && x + 48 > groundTiles[i][j].x && y < groundTiles[i][j].y + 32 && y + 48 > groundTiles[i][j].y)
 				{
 					player.inBossFight = true;
+					initBoss();
 					i = 16;
 					j = 10;
 					break;
@@ -404,7 +482,16 @@ static void playerFrame()
 	cameraX = p->x;
 	cameraY = p->y;
 
-	C2D_SpriteSetPos(&p->sprite, p->x + getCameraXOffset(), p->y + getCameraYOffset());
+	if (!player.inBossFight)
+	{
+		C2D_SpriteSetPos(&p->sprite, p->x + getCameraXOffset(), p->y + getCameraYOffset());
+	}
+	else
+	{
+		p->y = clamp(player.y, 26, 215);
+		p->x = clamp(player.x, 11 + 24, 380);
+		C2D_SpriteSetPos(&p->sprite, p->x, p->y);
+	}
 }
 
 static void screwFrame()
@@ -509,6 +596,81 @@ static void screwFrame()
 	}
 }
 
+static void bossFrame()
+{
+
+	Boss *b = &boss;
+
+	if (!(bomb.alive) && (rand() % 200) == 4)
+	{
+		bomb.alive = true;
+		bomb.moveAngle = atan2(player.y - boss.y, player.x - boss.x);
+
+		bomb.x = boss.x;
+		bomb.y = boss.y;
+	}
+
+	if (bomb.alive)
+	{
+		bomb.x += cos(bomb.moveAngle);
+		bomb.y += sin(bomb.moveAngle);
+
+		C2D_SpriteSetPos(&bomb.spr, bomb.x, bomb.y);
+
+		if (player.iFrames == 0 && player.x < bomb.x + 24 && player.x + 48 > bomb.x && player.y < bomb.y + 24 && player.y + 48 > bomb.y)
+		{
+			player.health--;
+			player.iFrames = 250;
+			bomb.alive = false;
+		}
+
+		if (bomb.x < -24 || bomb.x > 424 || bomb.y < -24 || bomb.y > 264)
+		{
+			bomb.alive = false;
+		}
+	}
+
+	boss.x = (SCREEN_WIDTH / 2) - 80 + 40 * sin(frame);
+	boss.y = (SCREEN_HEIGHT / 2) - 40;
+
+	if (player.tongueOut && boss.iFrames == 0 && player.x + player.tongueX >= boss.x && player.x + player.tongueX <= boss.x + 89 && player.y + 5 + player.tongueY >= boss.y && player.y + 5 + player.tongueY <= boss.y + 73)
+	{
+		boss.iFrames = 100;
+		boss.health--;
+		boss.animationFrame = BOSS_SPRITE_2;
+		boss.frameTime = 60;
+		C2D_SpriteFromSheet(&b->sprite, spriteSheet, b->animationFrame);
+		C2D_SpriteSetCenter(&b->sprite, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&b->sprite, b->x, b->y);
+	}
+
+	if (boss.iFrames > 0)
+	{
+		boss.iFrames--;
+	}
+
+	boss.frameTime--;
+	if (boss.frameTime == 0)
+	{
+		if (boss.animationFrame == BOSS_SPRITE_0)
+		{
+			boss.animationFrame = BOSS_SPRITE_1;
+		}
+		else
+		{
+			boss.animationFrame = BOSS_SPRITE_0;
+		}
+		C2D_SpriteFromSheet(&b->sprite, spriteSheet, b->animationFrame);
+		b->frameTime = 12;
+		C2D_SpriteSetCenter(&b->sprite, 0.5f, 0.5f);
+
+		b->y = b->y + b->dy;
+		b->x = b->x + b->dx;
+
+		C2D_SpriteSetPos(&b->sprite, b->x, b->y);
+	}
+}
+
 static void drawGroundTiles()
 {
 	for (size_t i = 0; i < 16; i++)
@@ -548,9 +710,17 @@ static void drawGroundTiles()
 
 static void update()
 {
-	checkPlayerCollisions();
 	playerFrame();
-	screwFrame();
+
+	if (!player.inBossFight)
+	{
+		checkPlayerCollisions();
+		screwFrame();
+	}
+	else
+	{
+		bossFrame();
+	}
 }
 
 int main(int argc, char *argv[])
@@ -724,29 +894,57 @@ int main(int argc, char *argv[])
 
 		// Draw sprites
 
-		drawGroundTiles();
+		if (!player.inBossFight)
+			drawGroundTiles();
+		else
+			C2D_DrawSprite(&cave);
 
 		// Draw Screws
-		for (size_t i = 0; i < SCREW_COUNT; i++)
-		{
-			if (screws[i].alive && abs(screws[i].x - player.x) < 400 && abs(screws[i].y - player.y) < 400)
+		if (!player.inBossFight)
+			for (size_t i = 0; i < SCREW_COUNT; i++)
 			{
-				C2D_DrawSprite(&screws[i].sprite);
+				if (screws[i].alive && abs(screws[i].x - player.x) < 400 && abs(screws[i].y - player.y) < 400)
+				{
+					C2D_DrawSprite(&screws[i].sprite);
+				}
+			}
+		else
+		{
+			C2D_DrawSprite(&boss.sprite);
+			if (bomb.alive)
+			{
+				C2D_DrawSprite(&bomb.spr);
 			}
 		}
 
 		// Draw player & tongue
 		if (player.tongueOut)
 		{
-			if (player.facing == PLAYER_IS_UP)
+			if (!player.inBossFight)
 			{
-				C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
-				C2D_DrawSprite(&player.sprite);
+				if (player.facing == PLAYER_IS_UP)
+				{
+					C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
+					C2D_DrawSprite(&player.sprite);
+				}
+				else
+				{
+					C2D_DrawSprite(&player.sprite);
+					C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
+				}
 			}
 			else
 			{
-				C2D_DrawSprite(&player.sprite);
-				C2D_DrawLine(player.x + getCameraXOffset(), player.y - 3 + getCameraYOffset(), C2D_Color32(255, 80, 80, 200), player.tongueX + player.x + getCameraXOffset(), player.tongueY - 3 + player.y + getCameraYOffset(), C2D_Color32(255, 80, 80, 255), 3, 0);
+				if (player.facing == PLAYER_IS_UP)
+				{
+					C2D_DrawLine(player.x, player.y - 3, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY - 3 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+					C2D_DrawSprite(&player.sprite);
+				}
+				else
+				{
+					C2D_DrawSprite(&player.sprite);
+					C2D_DrawLine(player.x, player.y - 3, C2D_Color32(255, 80, 80, 200), player.tongueX + player.x, player.tongueY - 3 + player.y, C2D_Color32(255, 80, 80, 255), 3, 0);
+				}
 			}
 		}
 		else
@@ -773,6 +971,19 @@ int main(int argc, char *argv[])
 		//  {
 		//  	C2D_DrawSprite(&hearts[i].spr);
 		//  }
+
+		if (player.inBossFight && boss.health == 0)
+		{
+			C2D_SpriteFromSheet(&win.spr, spriteSheet, CAVE_SPRITE + 1);
+			C2D_SpriteSetCenter(&win.spr, 0.0f, 0.0f);
+			C2D_SpriteSetPos(&win.spr, 0, 0);
+			C2D_DrawSprite(&win.spr);
+			// while (difftime(theTime, time(NULL)) < 5)
+			// {
+			// }
+
+			break;
+		}
 
 		C3D_FrameEnd(0);
 	}
