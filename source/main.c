@@ -479,8 +479,8 @@ static void playerFrame()
 
 	p->y = p->y + p->dy;
 	p->x = p->x + p->dx;
-	cameraX = p->x;
-	cameraY = p->y;
+	cameraX = clamp(p->x, SCREEN_WIDTH - 128, 32 * 60);
+	cameraY = clamp(p->y, SCREEN_HEIGHT, 32 * 70);
 
 	if (!player.inBossFight)
 	{
@@ -678,23 +678,23 @@ static void drawGroundTiles()
 		for (size_t j = 0; j < 10; j++)
 		{
 
-			if ((groundTiles[i][j].x - player.x) > (8 * 32))
+			if ((groundTiles[i][j].x - cameraX) > (8 * 32))
 			{
 				groundTiles[i][j].x -= 16 * 32;
 				groundTiles[i][j].spriteNumber = GROUND_SPRITE_OFFSET + mapLayout[(int)(groundTiles[i][j].y / 32)][(int)(groundTiles[i][j].x / 32)];
 			}
-			else if ((player.x - groundTiles[i][j].x) > (8 * 32))
+			else if ((cameraX - groundTiles[i][j].x) > (8 * 32))
 			{
 				groundTiles[i][j].x += 16 * 32;
 				groundTiles[i][j].spriteNumber = GROUND_SPRITE_OFFSET + mapLayout[(int)(groundTiles[i][j].y / 32)][(int)(groundTiles[i][j].x / 32)];
 			}
 
-			if ((groundTiles[i][j].y - player.y) > (5 * 32))
+			if ((groundTiles[i][j].y - cameraY) > (5 * 32))
 			{
 				groundTiles[i][j].y -= 10 * 32;
 				groundTiles[i][j].spriteNumber = GROUND_SPRITE_OFFSET + mapLayout[(int)(groundTiles[i][j].y / 32)][(int)(groundTiles[i][j].x / 32)];
 			}
-			else if ((player.y - groundTiles[i][j].y) > (5 * 32))
+			else if ((cameraY - groundTiles[i][j].y) > (5 * 32))
 			{
 				groundTiles[i][j].y += 10 * 32;
 				groundTiles[i][j].spriteNumber = GROUND_SPRITE_OFFSET + mapLayout[(int)(groundTiles[i][j].y / 32)][(int)(groundTiles[i][j].x / 32)];
