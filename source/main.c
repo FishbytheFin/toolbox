@@ -293,11 +293,11 @@ static void initBoss()
 
 	C2D_SpriteFromSheet(&b->sprite, spriteSheet, BOSS_SPRITE_0);
 	C2D_SpriteSetCenter(&b->sprite, 0.5f, 0.5f);
-	C2D_SpriteSetPos(&b->sprite, (SCREEN_WIDTH / 2) - 80, (SCREEN_HEIGHT / 2) - 40);
+	C2D_SpriteSetPos(&b->sprite, (SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2) - 40);
 
 	b->dx = 0.0f;
 	b->dy = 0.0f;
-	b->x = (SCREEN_WIDTH / 2) - 80;
+	b->x = (SCREEN_WIDTH / 2);
 	b->y = (SCREEN_HEIGHT / 2) - 40;
 	b->animationFrame = BOSS_SPRITE_0;
 	b->frameTime = 60;
@@ -601,7 +601,7 @@ static void bossFrame()
 
 	Boss *b = &boss;
 
-	if (!(bomb.alive) && (rand() % 200) == 4)
+	if (!(bomb.alive) && (rand() % 60) == 4)
 	{
 		bomb.alive = true;
 		bomb.moveAngle = atan2(player.y - boss.y, player.x - boss.x);
@@ -612,8 +612,8 @@ static void bossFrame()
 
 	if (bomb.alive)
 	{
-		bomb.x += cos(bomb.moveAngle);
-		bomb.y += sin(bomb.moveAngle);
+		bomb.x += 2 * cos(bomb.moveAngle);
+		bomb.y += 2 * sin(bomb.moveAngle);
 
 		C2D_SpriteSetPos(&bomb.spr, bomb.x, bomb.y);
 
@@ -630,18 +630,18 @@ static void bossFrame()
 		}
 	}
 
-	boss.x = (SCREEN_WIDTH / 2) - 80 + 40 * sin(frame);
+	boss.x = (SCREEN_WIDTH / 2) + 40 * sin(frame);
 	boss.y = (SCREEN_HEIGHT / 2) - 40;
 
 	if (player.tongueOut && boss.iFrames == 0 && player.x + player.tongueX >= boss.x && player.x + player.tongueX <= boss.x + 89 && player.y + 5 + player.tongueY >= boss.y && player.y + 5 + player.tongueY <= boss.y + 73)
 	{
-		boss.iFrames = 100;
+		boss.iFrames = 250;
 		boss.health--;
 		boss.animationFrame = BOSS_SPRITE_2;
-		boss.frameTime = 60;
+		boss.frameTime = 250;
 		C2D_SpriteFromSheet(&b->sprite, spriteSheet, b->animationFrame);
 		C2D_SpriteSetCenter(&b->sprite, 0.5f, 0.5f);
-		C2D_SpriteSetPos(&b->sprite, b->x, b->y);
+		C2D_SpriteSetPos(&b->sprite, boss.x, boss.y);
 	}
 
 	if (boss.iFrames > 0)
@@ -710,8 +710,6 @@ static void drawGroundTiles()
 
 static void update()
 {
-	playerFrame();
-
 	if (!player.inBossFight)
 	{
 		checkPlayerCollisions();
@@ -721,6 +719,7 @@ static void update()
 	{
 		bossFrame();
 	}
+	playerFrame();
 }
 
 int main(int argc, char *argv[])
@@ -885,7 +884,8 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		update();
+		if (!(player.inBossFight && boss.health == 0))
+			update();
 
 		// Render
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -982,7 +982,7 @@ int main(int argc, char *argv[])
 			// {
 			// }
 
-			break;
+			// break;
 		}
 
 		C3D_FrameEnd(0);
