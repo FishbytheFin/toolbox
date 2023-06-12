@@ -758,7 +758,7 @@ int main(int argc, char *argv[])
 		// User input
 		u32 kDown = hidKeysDown();
 
-		if (kDown & KEY_START || player.health == 0)
+		if (kDown & KEY_START)
 			break; // break in order to return to hbmenu
 
 		u32 kHeld = hidKeysHeld();
@@ -884,7 +884,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if (!(player.inBossFight && boss.health == 0))
+		if (!(player.inBossFight && boss.health == 0) && player.health != 0)
 			update();
 
 		// Render
@@ -975,6 +975,18 @@ int main(int argc, char *argv[])
 		if (player.inBossFight && boss.health == 0)
 		{
 			C2D_SpriteFromSheet(&win.spr, spriteSheet, CAVE_SPRITE + 1);
+			C2D_SpriteSetCenter(&win.spr, 0.0f, 0.0f);
+			C2D_SpriteSetPos(&win.spr, 0, 0);
+			C2D_DrawSprite(&win.spr);
+			// while (difftime(theTime, time(NULL)) < 5)
+			// {
+			// }
+
+			// break;
+		}
+		if (player.health == 0)
+		{
+			C2D_SpriteFromSheet(&win.spr, spriteSheet, CAVE_SPRITE + 2);
 			C2D_SpriteSetCenter(&win.spr, 0.0f, 0.0f);
 			C2D_SpriteSetPos(&win.spr, 0, 0);
 			C2D_DrawSprite(&win.spr);

@@ -37,3 +37,4 @@
 #define sprites_bomb0_idx 33
 #define sprites_cave_idx 34
 #define sprites_win_idx 35
+#define sprites_lose0_idx 36
