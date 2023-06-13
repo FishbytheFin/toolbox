@@ -758,8 +758,14 @@ int main(int argc, char *argv[])
 		// User input
 		u32 kDown = hidKeysDown();
 
-		if (kDown & KEY_START)
-			break; // break in order to return to hbmenu
+		if (kDown & KEY_START) {
+			if (player.health == 0) {
+				init();
+			} else {
+				break; // break in order to return to hbmenu
+			}
+		}
+			
 
 		u32 kHeld = hidKeysHeld();
 		if ((kHeld & KEY_UP))
